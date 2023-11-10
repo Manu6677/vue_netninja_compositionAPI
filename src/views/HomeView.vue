@@ -1,46 +1,34 @@
 <template>
   <div class="home">
     <h1>Home</h1>
-    <input type="text" placeholder="search Here" v-model="search" />
-    <p>Searched term: {{ search }}</p>
-    <div v-for="name in searchTerm" :key="name">{{ name }}</div>
-    <button @click="handleClick">Stop watching</button>
+
+    <div v-if="error">{{ error }}</div>
+    <div v-if="posts.length">
+      <PostList v-if="showPosts" :posts="posts" />
+    </div>
+
+    <div v-else>
+      <p>Loading....</p>
+    </div>
+
+    <button @click="showPosts = !showPosts">Toggle post data</button>
+    <button @click="posts.pop()">Update data by poping</button>
   </div>
 </template>
 
 <script>
-import { ref, computed, watch, watchEffect } from "vue";
+import { ref } from "vue";
+import PostList from "../components/PostList.vue";
+import getPost from "../composables/getPost";
 export default {
   name: "HomeView",
+  components: { PostList },
   setup() {
-    const search = ref("");
-    const names = ref([
-      "mario",
-      "yoshi",
-      "luigi",
-      "toad",
-      "bowser",
-      "koopa",
-      "peach",
-    ]);
+    const { posts, error, load } = getPost();
 
-    const stopWatch = watch(search, () => {
-      console.log("watch ran");
-    });
-
-    const stopEffect = watchEffect(() => {
-      console.log("i am watch effect", search.value);
-    });
-
-    const searchTerm = computed(() => {
-      return names.value.filter((name) => name.includes(search.value));
-    });
-
-    const handleClick = () => {
-      stopWatch();
-      stopEffect();
-    };
-    return { names, search, searchTerm, handleClick };
+    load();
+    const showPosts = ref(true);
+    return { posts, showPosts, error };
   },
 };
 
@@ -49,7 +37,7 @@ export default {
 
   -> Computed properties are used to calculate the value of a property based on some other conditions.
 
-  -> Watchers, on the other hand, are not primarily used for changing the value of a property; 
+  -> Watchers, on the other hand, are not primarily used for changing the value of a property;
       ->instead, they are used to notify you when the value has changed and let you perform certain actions based on these changes.
 
   -> Computed properties should be used when you need to get the current value of an object and use it in your logic, such as calculating something based on it.
